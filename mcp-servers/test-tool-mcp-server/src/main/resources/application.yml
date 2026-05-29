@@ -1,5 +1,9 @@
 server:
   port: 8080
+  tomcat:
+    socket:
+      so-linger=-1:
+
 
 spring:
   main:
@@ -15,3 +19,5 @@ spring:
         tool-change-notification: true
         prompt-change-notification: true
         protocol: streamable
+        annotation-scanner:
+          enabled: true
