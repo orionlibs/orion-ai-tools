@@ -1,0 +1,896 @@
+# MCP Tools for Claude Code — Comprehensive Idea List
+
+Tools are grouped by domain. Each entry: tool name, what it does, why it helps Claude Code.
+
+================================================================
+1. CODE INTELLIGENCE & NAVIGATION
+================================================================
+- symbol_lookup        Resolve a symbol to its definition, type, and docstring across the repo (LSP-backed). Saves grep churn.
+- find_references       All usages of a symbol with file:line. Better than text grep (scope-aware).
+- call_hierarchy        Callers/callees of a function. Helps impact analysis before edits.
+- type_at_point         Hover type info at a file:line. Removes guessing about inferred types.
+- rename_symbol         Project-wide safe rename via LSP. Avoids broken text replacements.
+- import_resolver       Given a symbol, suggest the correct import path/module.
+- dead_code_finder      Unused exports, functions, vars. Cleanup targeting.
+- dependency_graph      Module import graph (in/out edges) for a file or package.
+- ast_query             Run a structural query (tree-sitter/ast-grep) and return matches. Precise refactors.
+- code_outline          Return file structure (classes/functions/signatures) without full file read. Token saver.
+
+================================================================
+2. SEARCH & RETRIEVAL (token-efficient)
+================================================================
+- semantic_search       Embedding search over the codebase; return ranked snippets for a natural-language query.
+- definition_grep       Grep that returns only definitions (def/class/fn), not every mention.
+- recent_changes_search Search only files changed in last N commits/days.
+- doc_search            Search local docs/README/wiki and return relevant sections.
+- example_finder        Find existing usage examples of an API/pattern in the repo.
+- regex_extract         Return only capture groups, not whole lines. Compact output.
+
+================================================================
+3. GIT & VERSION CONTROL
+================================================================
+- git_blame_range       Blame for a line range with commit messages (why was this written).
+- commit_context        For a commit, return diff summary + PR link + related issues.
+- branch_diff_summary    Semantic summary of what differs between two branches.
+- find_introducing_commit  Bisect-style: which commit introduced a string/bug.
+- staged_diff           Return staged diff only, compacted.
+- conflict_explainer    Parse merge conflicts and explain both sides + suggest resolution.
+- changelog_since       Generate changelog from commits since a tag.
+- pr_metadata           Fetch PR title/body/reviews/checks for current branch.
+
+================================================================
+4. BUILD, TEST & DIAGNOSTICS
+================================================================
+- run_tests_filtered    Run tests matching a pattern; return only failures + stack frames in repo.
+- test_for_file         Map a source file to its test file(s) and vice versa.
+- coverage_gaps         Lines/branches in a file not covered by tests.
+- build_errors          Run build, return errors grouped by file/rule (compact).
+- flaky_test_detector   Run a test N times, report nondeterministic ones.
+- typecheck             Run type checker, return errors grouped by code.
+- lint_fixable          List lint issues + which are auto-fixable.
+- benchmark_run         Run a microbenchmark and return before/after timings.
+
+================================================================
+5. RUNTIME / EXECUTION SANDBOX
+================================================================
+- run_snippet           Execute a code snippet in an isolated sandbox, return stdout/stderr/exit.
+- repl_session          Persistent REPL (python/node) across calls for iterative debugging.
+- http_probe            Make an HTTP request to a local/dev endpoint and return compact response.
+- db_query              Run a read-only query against a dev DB, return rows (truncated).
+- schema_introspect     Return DB schema (tables/columns/indexes/relations) without values.
+- env_inspector         List env vars (redacted) and config resolution for the project.
+- process_inspector     What's listening on which ports / running dev servers.
+
+================================================================
+6. DOCUMENTATION & KNOWLEDGE
+================================================================
+- library_docs          Fetch official docs for a specific library@version + symbol (like Context7).
+- api_signature         Resolve a third-party function's signature/params from installed package.
+- changelog_lookup      Fetch a dependency's changelog between two versions (upgrade planning).
+- adr_search            Search architecture decision records for rationale.
+- internal_wiki         Query Confluence/Notion/internal docs.
+- code_comments_index   Surface TODO/FIXME/HACK with file:line and age.
+
+================================================================
+7. DEPENDENCY & SUPPLY CHAIN
+================================================================
+- dep_tree              Resolved dependency tree (compact) with versions.
+- outdated_deps         Outdated packages + latest + semver risk.
+- vuln_scan             Known CVEs in dependencies (advisory DB).
+- license_audit         License of each dependency + flag incompatibilities.
+- why_installed         Why a transitive dep is present (which parent pulls it).
+- bundle_size           Size impact of a package/import.
+
+================================================================
+8. PROJECT MEMORY & CONTEXT
+================================================================
+- project_facts         Store/retrieve durable facts about the project (build cmds, conventions).
+- task_journal          Append/read a running log of what was changed this session.
+- convention_lookup     Return coding conventions/patterns inferred from the repo.
+- glossary              Domain term definitions specific to this codebase.
+- decision_log          Record why a particular approach was chosen (avoids re-litigating).
+
+================================================================
+9. ISSUE TRACKING & COLLABORATION
+================================================================
+- jira_issue            Fetch/create/update a Jira ticket; link to current branch.
+- linear_issue          Same for Linear.
+- github_issue          Read/triage/comment on GitHub issues.
+- slack_post            Post a status/notification to a channel (with approval).
+- assign_reviewer       Suggest reviewers based on git blame ownership of touched files.
+- standup_summary       Generate a standup update from today's commits/PRs.
+
+================================================================
+10. CI/CD & DEPLOYMENT
+================================================================
+- ci_status             Latest CI run status + only failing job logs (compact).
+- ci_logs_failed        Fetch just the failing step's logs, filtered to errors.
+- deploy_status         Current deploy state per environment.
+- rollback_info         What the previous deployed version was + how to roll back.
+- pipeline_lint         Validate CI yaml before pushing.
+- artifact_fetch        Download/inspect a build artifact's manifest.
+
+================================================================
+11. OBSERVABILITY & DEBUGGING
+================================================================
+- log_query             Query app logs (Loki/CloudWatch/Datadog) filtered + deduped with counts.
+- error_groups          Top error groups from Sentry with stack + occurrence count.
+- trace_lookup          Fetch a distributed trace by ID, return span tree.
+- metric_query          Query a metric (Prometheus) and return summary stats.
+- stack_decode          Symbolicate/decode a minified or native stack trace.
+- repro_capture         Capture a failing request/payload as a reproducible test case.
+
+================================================================
+12. REFACTORING & CODE QUALITY
+================================================================
+- complexity_report     Cyclomatic complexity hotspots ranked.
+- duplication_finder    Detect copy-paste blocks across files.
+- extract_function      AST-safe extract of a selection into a function.
+- codemod_apply         Apply a structural transform across files (ast-grep/jscodeshift).
+- format_check          Which files violate formatting (no diffs, just list).
+- naming_consistency    Flag inconsistent naming for similar concepts.
+
+================================================================
+13. SECURITY (defensive)
+================================================================
+- secret_scan           Detect committed secrets/keys with file:line (redacted).
+- sast_scan             Static analysis for injection/auth/crypto issues.
+- dependency_audit      (see vuln_scan) integrated security advisories.
+- iac_scan              Misconfigurations in Terraform/K8s/Dockerfiles.
+- permission_diff       What perms/scopes a change adds (IAM, OAuth).
+- auth_flow_map         Map where authn/authz checks exist for an endpoint.
+
+================================================================
+14. DATA & API CONTRACTS
+================================================================
+- openapi_lookup        Resolve an endpoint's request/response schema from OpenAPI spec.
+- graphql_introspect    Return GraphQL schema types/fields for a query.
+- proto_lookup          Resolve protobuf/gRPC message definitions.
+- mock_generator        Generate realistic mock data conforming to a schema.
+- contract_diff         Detect breaking API changes between two spec versions.
+- json_shape            Return JSON structure/types without bulky values.
+
+================================================================
+15. FILE & WORKSPACE OPS
+================================================================
+- file_tree             Compact tree of a directory respecting .gitignore.
+- large_file_summary    Summarize a huge file's structure instead of dumping it.
+- diff_apply_safe       Apply a patch with conflict/hunk validation.
+- scratch_workspace     Create/manage a temp worktree for risky experiments.
+- file_history          Show how a file evolved (key revisions).
+- binary_inspect        Metadata for binary/asset files (dimensions, size, type).
+
+================================================================
+16. MULTIMODAL / DESIGN
+================================================================
+- screenshot_capture    Headless-browser screenshot of a local URL/route.
+- visual_diff           Pixel/structural diff between two screenshots.
+- design_token_lookup   Resolve design tokens (colors/spacing) from the design system.
+- a11y_audit            Accessibility issues for a rendered page.
+- component_preview      Render a component in isolation and return a screenshot.
+
+================================================================
+17. AGENTIC / WORKFLOW HELPERS
+================================================================
+- task_decompose        Break a feature request into ordered subtasks with deps.
+- impact_estimator      Estimate blast radius of a proposed change (files/tests affected).
+- checkpoint_create     Snapshot working state (stash/commit) before a risky step.
+- approval_gate         Pause and request human approval for a destructive action.
+- cost_tracker          Track token/compute spend for the session.
+- session_handoff       Serialize current context into a resumable handoff doc.
+
+================================================================
+18. DOMAIN-SPECIFIC (pick per stack)
+================================================================
+- react_component_map   Component tree + props flow for a React app.
+- rust_macro_expand     Expand a Rust macro to see generated code.
+- sql_explain           EXPLAIN ANALYZE a query and summarize the plan.
+- docker_inspect        Compact container/image/layer info.
+- k8s_resource          Get/describe a k8s resource, filtered.
+- terraform_plan_summary Summarize a `terraform plan` (adds/changes/destroys).
+
+================================================================
+DESIGN PRINCIPLES FOR THESE TOOLS
+================================================================
+- Token-efficient by default: return structured, filtered output, not raw dumps.
+- Read-only unless explicitly mutating; mutating tools require approval gates.
+- Scope-aware (LSP/AST) beats text grep — fewer false positives.
+- Composable: small single-purpose tools Claude can chain.
+- Idempotent + safe-to-retry where possible.
+- Include file:line references so output is clickable/actionable.
+- Prefer summaries with drill-down (return IDs/handles to fetch detail on demand).
+
+
+Here's a broad set of ideas across different domains, from practical to creative:
+
+---
+
+## Developer productivity
+
+- **Code reviewer** — analyses a diff or file for code smells, security issues, naming conventions, and suggests improvements
+- **Git history analyser** — summarises what changed in a repo over a time range, who changed what, identifies hotspot files
+- **Dependency auditor** — scans a `pom.xml` or `package.json` and reports outdated, vulnerable, or unused dependencies
+- **Test coverage advisor** — reads a class and its test file, identifies untested paths and suggests missing test cases
+- **OpenAPI validator** — validates a spec file, checks for missing descriptions, inconsistent naming, broken `$ref` links
+- **SQL query explainer** — takes a SQL query + schema and explains the execution plan, suggests indexes
+- **Log pattern detector** — reads log files and surfaces recurring error patterns, anomalies, or performance spikes
+- **Tech debt tracker** — scans source files for `TODO`, `FIXME`, `HACK` comments and produces a structured report
+
+---
+
+## Financial / Yapily-specific 🏦
+
+- **Transaction categoriser** — takes raw transaction data and classifies each into a category (groceries, travel, utilities etc)
+- **Spending anomaly detector** — compares current month vs historical average and flags unusual spend
+- **Account health checker** — given account data, produces a plain-English summary of financial health
+- **Recurring payment finder** — identifies likely subscriptions and direct debits from transaction history
+- **Balance forecaster** — projects future balance based on historical patterns and known upcoming payments
+- **Consent status checker** — looks up the status of an open banking consent and explains it in plain English
+- **Institution availability monitor** — checks if a bank's API is responding and reports degraded connections
+- **Payment risk scorer** — given a payment request, scores it for risk based on amount, recipient, account history
+
+---
+
+## Data & documents
+
+- **PDF summariser** — takes a PDF path or URL, extracts and summarises the key points
+- **CSV profiler** — reads a CSV and reports column types, nulls, distributions, outliers
+- **Schema diff tool** — compares two database schemas (or JSON schemas) and describes what changed
+- **Data quality checker** — validates a dataset against rules (no nulls in required fields, values in range, etc)
+- **Markdown to report converter** — turns structured markdown into a formatted HTML or PDF report
+- **Contract clause extractor** — reads a legal document and extracts key clauses (termination, liability, payment terms)
+
+---
+
+## Infrastructure & ops
+
+- **Docker inspector** — lists running containers, their resource usage, and flags anything unhealthy
+- **Environment diff tool** — compares environment variables across two profiles (dev vs prod) and highlights gaps
+- **Dead endpoint detector** — reads an OpenAPI spec and checks which endpoints return 404 or error in a target environment
+- **Config validator** — reads a Spring `application.properties` / `yaml` and validates required keys are present and correctly typed
+- **Kubernetes pod summariser** — queries a cluster and gives a human-readable health summary
+- **Deployment diff** — compares what's running in staging vs production
+
+---
+
+## Communication & workflow
+
+- **Slack message drafter** — given a situation description, drafts a Slack message in the right tone
+- **Meeting notes formatter** — takes raw bullet points and formats them into structured meeting minutes with action items
+- **JIRA ticket writer** — given a bug description or feature idea, generates a well-structured ticket with AC
+- **PR description generator** — given a diff summary, writes a clear pull request description
+- **Runbook generator** — given a service description, generates an incident runbook template
+- **On-call alert explainer** — takes a PagerDuty/alert payload and explains in plain English what fired and why
+
+---
+
+## AI & knowledge
+
+- **Prompt optimiser** — takes a raw prompt and rewrites it to be clearer and more effective
+- **Knowledge base searcher** — queries an internal Confluence/Notion space and returns relevant pages
+- **Decision logger** — records architectural or product decisions with context, date, and rationale to a store
+- **Glossary builder** — scans a codebase or document set and builds a domain glossary from recurring terms
+- **Q&A over docs** — given a folder of markdown files, answers questions using their content
+
+---
+
+## Fun / creative
+
+- **Standup generator** — given your git commits from yesterday, writes your daily standup update
+- **Code namer** — suggests good names for a class, method, or variable given what it does
+- **Retro facilitator** — given a list of events from the sprint, suggests what went well / what to improve
+- **Complexity scorer** — rates code complexity and gives it a human-readable label ("a junior could follow this" → "only the author understands this")
+- **Emoji commit tagger** — reads a commit message and suggests the right gitmoji prefix
+
+---
+
+The best ones to build first are usually those that **save you or your team time today** — the git history analyser, PR description generator, or log pattern detector are all things you'd use constantly inside Claude Code itself.
+
+
+Below is a comprehensive menu of MCP tools that are genuinely useful for **Claude Code**. I am biasing toward tools that improve **repository understanding, precise editing, validation, and delivery**, because those are the places where an agent becomes materially better.
+
+## 1) Repository discovery and code intelligence
+
+These tools help Claude Code build an accurate mental model of the codebase.
+
+* `list_workspaces` — enumerate repos/projects available to the agent.
+* `get_workspace_root` — resolve the root path and workspace metadata.
+* `tree` — return a shallow or filtered directory tree.
+* `search_text` — full-text search across the repo.
+* `search_symbols` — locate classes, functions, interfaces, constants, modules.
+* `go_to_definition` — jump from a symbol to its declaration.
+* `find_references` — find all usages of a symbol.
+* `outline_file` — return the structural outline of a file.
+* `summarize_file` — concise semantic summary of a file.
+* `summarize_directory` — summarize a package/module/folder.
+* `dependency_graph` — show import/module/package dependencies.
+* `call_graph` — show function/method call relationships.
+* `type_hierarchy` — show inheritance / interface implementation trees.
+* `detect_frameworks` — infer frameworks, runtimes, and build systems in use.
+* `detect_languages` — identify languages and versions in the repo.
+* `list_entrypoints` — find app entrypoints, main binaries, handlers, CLI commands.
+* `find_todos` — locate TODO/FIXME/HACK markers.
+* `find_dead_code_candidates` — detect likely unused files/symbols.
+* `find_circular_dependencies` — identify cycles in imports/modules.
+* `project_map` — produce a compact architecture map of the repo.
+* `context_pack` — collect the minimum context needed for a task into one bundle.
+
+## 2) Reading and editing files
+
+These are the core “hands” of the agent.
+
+* `read_file` — read file content with line ranges.
+* `read_many_files` — batch read multiple files.
+* `write_file` — create or replace a file.
+* `append_file` — append to an existing file.
+* `apply_patch` — precise diff-based editing.
+* `create_file` — create a new file with content.
+* `delete_file` — remove a file.
+* `move_file` — rename/move files safely.
+* `copy_file` — duplicate files.
+* `rename_symbol` — safely rename identifiers across the codebase.
+* `extract_method` — refactor a block into a new function/method.
+* `inline_symbol` — inline small helpers where appropriate.
+* `format_file` — format a file with the project’s formatter.
+* `organize_imports` — sort and dedupe imports.
+* `sort_members` — canonicalize class/member order.
+* `generate_stub` — create scaffolding for a new module/class/function.
+* `insert_imports` — add missing imports automatically.
+* `replace_text` — targeted text substitution.
+* `bulk_replace` — multi-file textual transformations.
+* `protect_block` — prevent edits to a marked region.
+* `open_diff` — inspect the pending patch before applying.
+
+## 3) Refactoring and architecture tools
+
+These make Claude Code much better at non-trivial code changes.
+
+* `refactor_symbol` — move/rename/update a symbol and all references.
+* `extract_interface` — derive an interface from an implementation.
+* `extract_class` — split a class into smaller units.
+* `split_file` — separate a large file into coherent modules.
+* `merge_files` — consolidate duplicate or fragmented modules.
+* `decouple_modules` — suggest or apply dependency reduction.
+* `reduce_complexity` — identify and refactor high-complexity functions.
+* `simplify_conditionals` — normalize branching logic.
+* `normalize_error_handling` — unify exception patterns.
+* `introduce_strategy` — convert branching behavior to a strategy pattern.
+* `introduce_adapter` — wrap incompatible APIs.
+* `introduce_facade` — create a simpler surface over a subsystem.
+* `introduce_factory` — unify object creation patterns.
+* `introduce_validation` — centralize input validation logic.
+* `architecture_review` — detect layering violations, tight coupling, or leaky abstractions.
+* `module_boundary_check` — enforce package boundaries.
+* `api_compatibility_check` — detect breaking changes between versions.
+
+## 4) Build, test, and verification
+
+Claude Code becomes far more reliable when it can verify its own work.
+
+* `run_command` — execute arbitrary project commands.
+* `build_project` — run the standard build.
+* `run_tests` — run the full test suite.
+* `run_test_file` — run a single test file.
+* `run_test_case` — run one named test.
+* `watch_tests` — rerun relevant tests after changes.
+* `lint_project` — run linting.
+* `typecheck_project` — run static typing checks.
+* `format_project` — format the repository.
+* `coverage_report` — return coverage metrics and missing lines.
+* `run_benchmark` — benchmark critical paths.
+* `capture_test_failures` — normalize stack traces and failing assertions.
+* `rerun_failed_tests` — rerun only failures.
+* `test_impact_analysis` — estimate which tests are impacted by a change.
+* `generate_tests` — create tests from code or from a failing scenario.
+* `mutate_test_inputs` — fuzz boundary cases.
+* `assertion_suggester` — recommend missing assertions for brittle tests.
+* `snapshot_diff` — compare golden/snapshot outputs.
+* `golden_test_update` — update approved outputs after review.
+
+## 5) Debugging and incident diagnosis
+
+These are especially valuable for real-world software work.
+
+* `get_stack_trace_summary` — compress and explain stack traces.
+* `error_signature_search` — match a failure against known patterns.
+* `trace_request` — follow a request across services or layers.
+* `reproduce_bug` — run a scripted reproduction.
+* `bisect_regression` — help locate the commit that introduced a regression.
+* `compare_environments` — diff local, CI, staging, and prod environments.
+* `inspect_processes` — view running processes tied to the project.
+* `inspect_ports` — see which ports are in use.
+* `tail_logs` — stream or fetch recent logs.
+* `search_logs` — query logs by pattern or time window.
+* `collect_diagnostics` — gather a compact debug bundle.
+* `health_check` — check service readiness/liveness endpoints.
+* `dump_config` — inspect effective runtime config.
+* `inspect_env` — show relevant environment variables.
+* `incident_summary` — summarize symptoms, timeline, and likely root causes.
+
+## 6) Git and version control
+
+Claude Code should be able to work the way a strong engineer would in Git.
+
+* `git_status` — show modified/untracked/conflicted files.
+* `git_diff` — show staged/unstaged/branch diffs.
+* `git_blame` — attribute lines to commits.
+* `git_log` — inspect commit history.
+* `git_commit` — create a commit with a message.
+* `git_branch` — create or switch branches.
+* `git_checkout` — checkout commit/branch/path.
+* `git_restore` — discard changes selectively.
+* `git_add` — stage selected files/hunks.
+* `git_stash` — stash work in progress.
+* `git_merge` — merge branches.
+* `git_rebase` — rebase branch history.
+* `git_cherry_pick` — apply specific commits.
+* `git_conflict_assistant` — help resolve merge conflicts.
+* `git_tag` — create and inspect release tags.
+* `git_submodule_status` — inspect nested repos if relevant.
+
+## 7) Pull requests and code review
+
+These tools let Claude Code participate in review workflows.
+
+* `create_pull_request` — open a PR with title/body.
+* `update_pull_request` — edit PR metadata.
+* `summarize_pull_request` — produce a reviewable summary.
+* `review_pull_request` — highlight correctness, style, risk, and missing tests.
+* `list_review_comments` — inspect review feedback.
+* `respond_to_review_comment` — draft or post replies.
+* `apply_review_suggestion` — accept a suggestion cleanly.
+* `compare_branches` — structured branch comparison.
+* `generate_pr_description` — create a high-signal PR write-up.
+* `generate_review_checklist` — produce a review checklist from changed files.
+* `release_notes_from_diff` — draft release notes from the merged diff.
+
+## 8) Issues, planning, and work tracking
+
+These tools connect code to delivery.
+
+* `search_issues` — find relevant tickets.
+* `get_issue` — inspect full issue context.
+* `create_issue` — file new work.
+* `update_issue` — change status, priority, owner, labels.
+* `link_issue_to_pr` — connect delivery artifacts.
+* `issue_to_task_plan` — convert an issue into an implementation plan.
+* `estimate_issue` — suggest complexity or effort.
+* `backlog_summary` — summarize current queue.
+* `sprint_summary` — summarize sprint scope and blockers.
+* `changelog_entry` — generate user-facing change notes.
+* `decision_log` — record architecture or product decisions.
+* `open_questions` — keep unresolved questions visible.
+* `risk_register` — track technical or delivery risks.
+
+## 9) Documentation and knowledge base
+
+Claude Code is much better when it can read and maintain docs as part of the workflow.
+
+* `search_docs` — search internal documentation.
+* `read_doc` — retrieve a specific doc page.
+* `summarize_docs` — compress long docs into task-relevant context.
+* `create_readme` — generate or update README content.
+* `update_adr` — create/update architecture decision records.
+* `generate_api_docs` — derive docs from code annotations/signatures.
+* `validate_docs_against_code` — detect drift between docs and implementation.
+* `link_docs_to_symbols` — connect docs to source entities.
+* `doc_lint` — enforce style and structure in docs.
+* `generate_examples` — produce usage examples for APIs.
+* `faq_generator` — extract recurring questions and answers.
+* `runbook_generator` — create operational runbooks from the codebase.
+* `architecture_diagram_data` — emit structured data for diagrams.
+* `change_summary` — produce a concise summary of what changed and why.
+
+## 10) Dependency, package, and supply-chain management
+
+These are essential for modern codebases.
+
+* `list_dependencies` — enumerate direct and transitive dependencies.
+* `dependency_tree` — show package graph.
+* `outdated_dependencies` — identify upgrades.
+* `security_vulnerabilities` — scan known CVEs.
+* `license_report` — report dependency licenses.
+* `sbom_generate` — create a software bill of materials.
+* `package_publish_status` — inspect published package versions.
+* `lockfile_diff` — compare dependency lockfiles.
+* `upgrade_advisor` — estimate risk of upgrading a package.
+* `breaking_change_checker` — assess compatibility risk.
+* `dependency_health` — score maintenance/age/activity.
+* `duplicate_dependency_detector` — spot version conflicts.
+* `secret_scan` — detect secrets in source or config.
+* `supply_chain_audit` — verify signatures, provenance, or policy compliance.
+
+## 11) CI/CD and release automation
+
+These tools save a lot of time in real engineering workflows.
+
+* `list_workflows` — show CI/CD pipelines.
+* `run_workflow` — trigger a workflow manually.
+* `workflow_status` — inspect current pipeline state.
+* `get_job_logs` — fetch failing job logs.
+* `get_artifacts` — download artifacts from CI.
+* `deployment_status` — show current deployment state.
+* `rollback_deployment` — trigger safe rollback.
+* `promote_release` — advance a build through environments.
+* `release_notes` — generate release notes from merged changes.
+* `version_bump` — update version numbers.
+* `tag_release` — create release tags.
+* `publish_package` — publish artifacts to registries.
+* `verify_release` — confirm release integrity and health.
+* `changelog_sync` — synchronize changelog and tags.
+* `environment_diff` — compare config between environments.
+
+## 12) Databases, schemas, and migrations
+
+Very useful if Claude Code touches backend systems.
+
+* `inspect_schema` — introspect tables, columns, indexes, constraints.
+* `query_database` — execute safe read-only queries.
+* `explain_query` — return query plans.
+* `compare_schemas` — diff schema versions or environments.
+* `migration_status` — inspect applied/pending migrations.
+* `generate_migration` — create a migration from model changes.
+* `apply_migration` — run controlled migrations.
+* `rollback_migration` — revert the latest migration.
+* `seed_data` — populate development/test data.
+* `fixture_manager` — manage reusable test fixtures.
+* `sample_data` — extract anonymized representative samples.
+* `index_advisor` — suggest missing or redundant indexes.
+* `query_linter` — flag inefficient SQL patterns.
+* `data_anomaly_check` — detect suspicious outliers or null patterns.
+* `schema_documentation` — generate data dictionary entries.
+
+## 13) Runtime, observability, and operations
+
+These are especially high value for production systems.
+
+* `metrics_query` — query system or app metrics.
+* `logs_query` — search structured logs.
+* `traces_query` — inspect distributed traces.
+* `alert_status` — show active alerts.
+* `incident_timeline` — reconstruct an incident timeline.
+* `service_catalog` — list services and ownership metadata.
+* `dependency_status` — check upstream/downstream service health.
+* `feature_flag_status` — inspect feature flag state.
+* `toggle_feature_flag` — enable/disable a flag safely.
+* `config_snapshot` — capture runtime configuration.
+* `readiness_check` — verify service readiness.
+* `restart_service` — controlled restart, where appropriate.
+* `scale_service` — adjust replicas/resources in dev or controlled contexts.
+* `secret_reference_check` — confirm secrets are mounted and referenced correctly.
+* `audit_log_query` — inspect operational changes.
+
+## 14) Security and compliance
+
+These help Claude Code avoid creating insecure changes.
+
+* `static_security_scan` — code vulnerability scanning.
+* `secret_detection` — locate hardcoded secrets.
+* `authz_review` — inspect authorization paths and checks.
+* `authn_review` — inspect authentication flows.
+* `permission_matrix` — compare roles and capabilities.
+* `sast_findings` — retrieve static analysis results.
+* `dependency_vuln_report` — summarize package risk.
+* `policy_check` — validate code or config against organizational rules.
+* `pii_scan` — detect personal data handling.
+* `encryption_review` — inspect storage/transit encryption usage.
+* `csrf_review` — look for missing CSRF protections.
+* `input_validation_review` — identify unsafe parsing/validation.
+* `audit_trail_check` — verify actions are logged.
+* `compliance_report` — map findings to a standard or internal control set.
+
+## 15) Frontend and UI-specific helpers
+
+Very useful if your users work on web apps.
+
+* `route_map` — list routes and route handlers.
+* `component_tree` — inspect UI component structure.
+* `props_inspector` — summarize component inputs/outputs.
+* `state_flow_map` — trace state management flows.
+* `api_call_map` — show client-side API usage.
+* `style_token_check` — enforce design system tokens.
+* `accessibility_lint` — flag a11y issues.
+* `ui_snapshot_diff` — compare screenshots or DOM snapshots.
+* `browser_test_runner` — run browser-based tests.
+* `responsive_check` — inspect layout at multiple viewports.
+* `bundle_analysis` — inspect bundle size and dependencies.
+* `translation_key_check` — detect missing or unused localization keys.
+
+## 16) Product, analytics, and experimentation
+
+Useful when Claude Code is used close to product work.
+
+* `analytics_query` — retrieve event or funnel data.
+* `dashboard_snapshot` — summarize important product metrics.
+* `experiment_status` — inspect A/B test state.
+* `feature_usage_report` — see adoption of a feature.
+* `event_schema_check` — validate analytics event contracts.
+* `funnel_breakdown` — identify drop-off points.
+* `cohort_summary` — summarize behavior by cohort.
+* `segment_definition` — inspect audience definitions.
+* `metric_drilldown` — answer “why did this metric move?”
+* `release_impact_analysis` — correlate releases to usage or errors.
+
+## 17) Higher-level “agentic” composite tools
+
+These are not always necessary, but they can make Claude Code dramatically more effective.
+
+* `implement_task_from_issue` — take a ticket, plan changes, edit code, run tests, and summarize.
+* `fix_failing_ci` — inspect failed pipeline, patch likely cause, rerun checks.
+* `refactor_and_test` — perform a refactor plus validation loop.
+* `diagnose_prod_issue` — gather logs, metrics, traces, and likely root cause.
+* `generate_tests_for_diff` — create tests specifically for the current patch.
+* `review_my_changes` — self-review staged changes before commit.
+* `prep_release` — update versioning, changelog, tests, and release metadata.
+* `repo_onboarding_pack` — generate a compact repo orientation bundle.
+* `module_modernization_plan` — identify modernization steps for an old subsystem.
+* `feature_slicing_plan` — break a large request into implementable sub-tasks.
+
+## 18) “Claude Code niceties” that are surprisingly valuable
+
+These are small tools that often pay off more than flashy ones.
+
+* `file_digest` — hash or fingerprint files for change detection.
+* `change_detector` — tell what changed since a reference point.
+* `similar_code_search` — find analogous implementations in the repo.
+* `pattern_finder` — detect repeated code shapes or conventions.
+* `convention_checker` — verify naming/layout/style conventions.
+* `generated_code_detector` — identify generated files that should not be edited manually.
+* `workspace_cache_status` — report cached indexes and freshness.
+* `index_rebuild` — rebuild symbol/search indexes.
+* `rate_limit_status` — expose API limits relevant to the task.
+* `safe_command_runner` — allow a constrained command set with policy guardrails.
+
+## What I would build first
+
+If you want maximum leverage with minimum surface area, start with these:
+
+`search_text`, `search_symbols`, `go_to_definition`, `find_references`, `outline_file`, `read_file`, `apply_patch`, `run_tests`, `git_diff`, `git_commit`, `summarize_pull_request`, `query_database`, `logs_query`, `metrics_query`, `dependency_vulnerabilities`, `generate_tests`, `context_pack`, and `project_map`.
+
+Those alone will make Claude Code feel much more capable.
+
+## A strong design rule
+
+For Claude Code, the best MCP tools are usually:
+
+* **small and atomic** rather than giant “do everything” endpoints,
+* **typed and structured** rather than free-form text blobs,
+* **read-optimized** before write-optimized,
+* and **safe by default** with dry-run, preview, and confirmation modes.
+
+A very effective pattern is to pair each write tool with a preview tool, for example:
+
+* `apply_patch_preview` → `apply_patch`
+* `run_migration_dry_run` → `apply_migration`
+* `create_pr_draft` → `create_pull_request`
+* `deploy_preview` → `deploy`
+
+If you want, I can turn this into a **prioritized MCP roadmap** with an MVP set, v2 set, and “advanced differentiator” set for a Claude Code integration.
+
+
+Building an MCP (Model Context Protocol) server for Claude Code is a fantastic way to extend its capabilities. Because Claude Code natively handles basic file editing, `grep` searches, and standard shell command execution, the most valuable MCP tools are those that bridge the gap to **structured data, complex external systems, and stateful environments** without overwhelming the token context window.
+
+Here is a comprehensive list of high-leverage MCP tools you could build, categorized by the problems they solve.
+
+## 1. Database & State Introspection
+
+Claude Code can technically run `psql` or `redis-cli` via bash, but the raw text output is token-heavy and prone to formatting errors. An MCP server provides structured, context-efficient access.
+
+* **Safe Schema & Query Engine (PostgreSQL/SQL):**
+* **Tools:** `get_schema_diagram`, `execute_readonly_query`, `explain_query_plan`.
+* **Why it's useful:** Allows Claude to intelligently explore database structures and test queries without the risk of accidentally running an `UPDATE` or `DROP` command via a raw bash shell.
+
+
+* **Key-Value & Cache Inspector (Redis):**
+* **Tools:** `scan_keys_by_pattern`, `get_decoded_value`, `monitor_pubsub_channel`.
+* **Why it's useful:** Perfect for debugging asynchronous message queues, orchestrators, or caching layers. Instead of dumping raw bytes, the MCP can decode JSON/MessagePack payloads into clean context.
+
+
+* **Time-Series & Telemetry Viewer:**
+* **Tools:** `fetch_metric_range`, `detect_anomalies`, `summarize_logs`.
+* **Why it's useful:** For analyzing transaction spikes or system load. The MCP can pre-aggregate massive time-series datasets into statistical summaries, saving hundreds of thousands of tokens.
+
+
+
+## 2. API & Network Engineering
+
+When working with complex external APIs (like payment gateways, open banking protocols, or industrial endpoints), Claude needs more than just `curl`.
+
+* **OpenAPI/Swagger Sandbox:**
+* **Tools:** `load_openapi_spec`, `generate_mock_payload`, `execute_api_call`.
+* **Why it's useful:** Instead of pasting API docs into the chat, the MCP dynamically parses local or remote swagger docs, allowing Claude to understand endpoints, construct valid JSON payloads, and test them instantly.
+
+
+* **Local Webhook Catcher:**
+* **Tools:** `start_webhook_listener`, `get_latest_payloads`, `clear_webhook_history`.
+* **Why it's useful:** If you are building integrations that rely on external triggers, this MCP can spin up a lightweight local server (or tunnel) and feed the incoming webhook payloads directly to Claude for debugging.
+
+
+* **Synthetic Data Generator:**
+* **Tools:** `generate_transaction_batch`, `mock_iot_telemetry`.
+* **Why it's useful:** When writing parsing logic or orchestrators, you often need realistic dummy data. An MCP can dynamically generate thousands of lines of schema-compliant data (e.g., banking transactions or SCADA sensor data) and write them straight to a local test database.
+
+
+
+## 3. Deep Code & Architecture Intelligence
+
+Claude Code’s native file search is text-based. An AST-aware (Abstract Syntax Tree) tool makes it significantly smarter, especially for strongly typed languages like Rust or Java.
+
+* **Semantic AST Navigator:**
+* **Tools:** `find_trait_implementations`, `get_method_callers`, `extract_interface_signature`.
+* **Why it's useful:** If you ask Claude to "find everything that implements this interface," a text search will fail if the implementation is in another file without the explicit keyword. An AST MCP uses tools like `rust-analyzer` or Java's LSP to return structural truths.
+
+
+* **Architecture & Dependency Mapper:**
+* **Tools:** `generate_module_graph`, `find_circular_dependencies`.
+* **Why it's useful:** It can analyze a complex codebase and feed Claude a JSON representation of how modules communicate, allowing it to propose architectural refactors rather than just line-by-line edits.
+
+
+
+## 4. Cross-Platform Environment & System Debugging
+
+Managing different paths, dependencies, and binaries across macOS and Windows is notoriously frustrating.
+
+* **Environment Validator:**
+* **Tools:** `resolve_binary_path`, `diff_env_variables`, `check_port_usage`.
+* **Why it's useful:** If a build script works on macOS but fails on Windows 10, Claude can use this MCP to systematically probe system paths, registry keys (on Windows), or dotfiles (on Mac) to find the discrepancy.
+
+
+* **Smart Log Slicer:**
+* **Tools:** `extract_stack_traces`, `filter_logs_by_level`, `tail_recent_errors`.
+* **Why it's useful:** Native `cat` or `tail` commands easily blow out the context window. A smart log MCP parses standard log formats, filters out the noise, and only feeds Claude the actual stack traces or error blocks.
+
+
+
+## 5. Domain-Specific Simulators
+
+If you work in niche intersections—like connecting IT infrastructure to physical hardware—mocking that environment is crucial.
+
+* **Hardware/OT Protocol Emulator:**
+* **Tools:** `start_modbus_server`, `read_virtual_register`, `inject_hardware_fault`.
+* **Why it's useful:** Allows Claude to write and test code meant for physical hardware by interacting with an MCP server that accurately mimics serial ports, PLCs, or flight telemetry data streams.
+
+
+[IDEA] Auto-formatter gate: PostToolUse on Edit/Write -> run prettier/gofmt,
+       reject the edit if it doesn't pass.
+[IDEA] Secret scanner: PreToolUse on Write/Edit -> block if a regex matches an
+       API key / .env value about to be committed.
+[IDEA] ⚡ Cost meter: PostToolUse logs token usage to a sqlite db; status line
+       reads it -> live $ spend per session (RTK-style for everything).
+[IDEA] Test-on-save: PostToolUse on edits to src/** -> run the matching test file,
+       feed only failures back.
+[IDEA] Voice/desktop ping: Notification hook -> macOS `say` or push notification
+       when Claude is blocked waiting on you.
+[IDEA] Branch guard: PreToolUse on `git commit`/`git push` -> refuse if on `main`.
+[IDEA] Auto-changelog: Stop hook -> append a one-line summary of what changed to
+       a running CHANGELOG/worklog.
+[IDEA] Context injector: UserPromptSubmit -> grep the prompt for a ticket ID,
+       fetch the Jira/Linear issue, prepend it.
+[IDEA] "Forbidden dir" enforcer: PreToolUse blocks any Read into node_modules/.git.
+[IDEA] Compaction archivist: PreCompact -> dump the full transcript to disk so
+       nothing is ever truly lost.
+[IDEA] Company-specific code review skill encoding YOUR org's standards.
+[IDEA] Incident-response runbook skill (declare sev, gather logs, timeline, RCA).
+[IDEA] ⚡ "House style" skill: your naming conventions, file layout, lint rules,
+       commit format — so every change matches your repo automatically.
+[IDEA] Domain skill: "how to add a new API endpoint in our codebase" (the 9
+       files you always touch, in order, with the gotchas).
+[IDEA] Migration skill: encode a repeatable framework upgrade procedure.
+[IDEA] Data-pull skill: wraps your warehouse — "answer this metric question"
+       knows the schema, the right tables, the caveats.
+[IDEA] Onboarding skill: turns a new hire's questions into guided codebase tours.
+[IDEA] Skill that writes skills (meta) — interview the user, emit a SKILL.md.
+[IDEA] Release skill: version bump + changelog + tag + GH release in your flavor.
+[IDEA] /standup — summarize yesterday's commits into a standup update.
+[IDEA] /pr — diff -> conventional commit -> push -> open PR with templated body.
+[IDEA] /explain $file — plain-English walkthrough for a teammate.
+[IDEA] /fixme — grep for TODO/FIXME, triage, fix the easy ones.
+[IDEA] /scaffold $component — generate component+test+story from your template.
+[IDEA] /eod — end-of-day: commit WIP, write tomorrow's TODO, log time.
+[IDEA] /triage $issue_url — fetch a GH issue, reproduce, propose a fix plan.
+[IDEA] /rtk-audit — wrap `rtk discover` to find missed token-saving chances.
+[IDEA] A panel of adversarial reviewers (security, perf, correctness) that run
+       in parallel on every diff and vote.
+[IDEA] ⚡ "Explorer" agent for any broad search so file dumps never hit your context.
+[IDEA] Dedicated test-writer agent that only writes/repairs tests.
+[IDEA] Research agent wired to your internal wiki + web.
+[IDEA] Migration agent per-file in its own worktree (mass refactors safely).
+[IDEA] "Second opinion" agent on a different model for disagreement-detection.
+[IDEA] Internal-API MCP: wrap your company's REST API so Claude can act in your
+       product (create users, refund orders, pull metrics) — agent-native ops.
+[IDEA] ⚡ Warehouse MCP: read-only SQL to your analytics DB; Claude answers data
+       questions with real numbers.
+[IDEA] Design MCP: read Figma -> generate matching components (figma sync).
+[IDEA] Observability MCP: query Datadog/Grafana/Sentry during debugging.
+[IDEA] Ticketing MCP: Linear/Jira/GitHub issues as first-class read/write tools.
+[IDEA] Browser MCP (Playwright): let Claude drive a real browser to verify UI.
+[IDEA] Knowledge-base MCP: RAG over your Notion/Confluence/Slack.
+[IDEA] Hardware/IoT MCP: control lab equipment, home automation, robots.
+[IDEA] Payments MCP (Stripe): create products, inspect charges, test webhooks.
+[IDEA] ⚡ A company "starter pack" plugin: house-style skill, /pr command, code-
+       review agents, secret-scan hook, internal-API MCP — one install, whole
+       team is aligned.
+[IDEA] A stack-specific plugin (e.g. "Rails 37signals style", "Next.js + tRPC").
+[IDEA] An open-source plugin marketplace for a framework's community.
+[IDEA] A "security team" plugin: pen-test skills, threat-detection agents,
+       incident-response runbooks, SAST hooks.
+[IDEA] A teaching plugin: codebase-to-course skill + quiz generators.
+[IDEA] Permission allow-list tuned to your safe commands -> far fewer prompts
+       (the /fewer-permission-prompts skill automates this).
+[IDEA] Deny-list dangerous patterns org-wide via enterprise settings.
+[IDEA] Per-project model routing (cheap model for one repo, Opus for another).
+[IDEA] Env-injected feature flags that skills/hooks read.
+[IDEA] "Explain like I'm reviewing a PR" style for review sessions.
+[IDEA] "Socratic tutor" style for learning a codebase.
+[IDEA] "Commit-message-only" style for rapid committing.
+[IDEA] ⚡ Live token-spend + $ cost (read from your cost-meter hook's db).
+[IDEA] Current git branch + dirty count + CI status.
+[IDEA] Pomodoro timer / time-on-task.
+[IDEA] Current ticket + its status pulled from Linear.
+[IDEA] Model + context-window-% used.
+[IDEA] Chord to insert your most-used slash command.
+[IDEA] Rebind submit, quick-/compact, quick-model-switch.
+[IDEA] ⚡ Auto-memory hook: after each session, extract decisions/preferences and
+       write memory files — Claude compounds knowledge over time.
+[IDEA] Per-project "gotchas" memory that survives across sessions.
+[IDEA] Team-shared CLAUDE.md checked into the repo (you already have RTK rules).
+[IDEA] A "learnings" pipeline (the ce-compound skill model): every solved bug
+       becomes a searchable doc future sessions consult.
+[IDEA] ⚡ CI bot: on every PR, run Claude headless to review + comment.
+[IDEA] Issue-to-PR bot: GH issue labeled "claude" -> autonomous fix + PR.
+[IDEA] Slack bot backed by Claude Code with your MCP tools.
+[IDEA] Batch refactorer: script that runs Claude across 500 repos.
+[IDEA] A custom domain agent product (support agent, data analyst) on the SDK.
+[IDEA] Nightly "tech-debt sweeper" that opens small cleanup PRs.
+[IDEA] Self-hosted web UI that drives Claude Code for non-technical teammates.
+[IDEA] ⚡ Cron "PR babysitter": every 10 min, check open PRs, fix red CI.
+[IDEA] Daily dependency-audit cron -> opens an issue if CVEs appear.
+[IDEA] Workflow: review-changes across N dimensions, adversarially verify each.
+[IDEA] Workflow: mass-migration over a file list, each in its own worktree.
+[IDEA] /loop watching a deploy until healthy, then notify.
+[IDEA] Nightly "what changed in our deps' changelogs" digest.
+[IDEA] Scheduled product-pulse report (usage + errors + signals).
+[IDEA] IDE-driven workflows: select code -> trigger a skill from the editor.
+[IDEA] Web sessions for non-terminal teammates (PMs, designers).
+[IDEA] Mobile/remote kickoff of long background jobs.
+[IDEA] ⚡ AGENT-NATIVE APP
+  MCP (your API as tools) + subagents + skills + headless SDK = your product
+  becomes operable by an agent. Anything a user can do in the UI, an agent can do.
+  Build features as "outcomes an agent achieves in a loop," not screens.
+
+[IDEA] ⚡ THE COMPOUNDING ENGINEERING SETUP
+  every bug fixed -> ce-compound writes a learning doc
+  -> learnings-researcher skill consults them next time
+  -> house-style skill + review agents enforce standards
+  -> /pr + commit skills standardize output
+  Net effect: the system gets smarter and more consistent every week.
+
+[IDEA] ⚡ FULLY AUTONOMOUS SHIP PIPELINE  (the `lfg` pattern)
+  plan -> work -> multi-agent code review -> browser test -> commit -> push ->
+  open PR -> watch CI -> fix failures until green. Kicked off by one prompt or
+  a GH label, runnable headless in CI.
+
+[IDEA] TOKEN-OPTIMIZATION LAYER  (RTK, generalized)
+  hooks rewrite verbose commands to compact proxies + cost-meter hook +
+  status-line spend display + a /gain command. 60-90% fewer tokens, measured.
+
+[IDEA] TEAM PLATFORM
+  one plugin distributing: company skills, MCP servers for internal systems,
+  policy hooks, review agents, shared CLAUDE.md. New engineer installs once and
+  is instantly aligned with org standards + tooling.
+
+[IDEA] CODEBASE-AS-PRODUCT
+  codebase-to-course skill turns repos into interactive HTML lessons; pair with
+  a docs MCP and an onboarding subagent for self-serve onboarding.
+
+[IDEA] DESIGN-TO-CODE LOOP
+  Figma MCP + frontend-design skill + browser MCP screenshots + design-iterator
+  agent = closed loop that builds UI and visually verifies it matches the design.
+
+[IDEA] DATA ANALYST IN A BOX
+  warehouse MCP (read-only SQL) + a metrics skill (schema + caveats) + a charting
+  script + scheduled cron = self-serve analytics for the whole company in chat.
+
+[IDEA] SECURITY OPERATIONS SUITE
+  SAST hooks on every edit + secret-scanner + red-team/threat-detection skills +
+  incident-response runbook + scheduled dependency-CVE cron.
