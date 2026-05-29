@@ -6,7 +6,7 @@
     <artifactId>core</artifactId>
     <version>0.0.1</version>
     <packaging>jar</packaging>
-    <name>AI Tools</name>
+    <name>AI Tools Core</name>
 
 
     <parent>
@@ -64,7 +64,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.orion.mcp.server.MCPServerApplication</mainClass>
+                    <mainClass>com.orion.aitools.mcp.server.MCPServerApplication</mainClass>
                     <jvmArguments>
                         --add-opens java.base/java.time=ALL-UNNAMED
                     </jvmArguments>

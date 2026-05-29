@@ -1,4 +1,4 @@
-package com.orion.mcp.server;
+package com.orion.aitools.mcp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,4 +1,4 @@
-package com.orion.mcp.server;
+package com.orion.aitools.mcp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,13 +43,11 @@ public class MCPToolRegistrationTest
                                         .isNotBlank()
         );
     }
-    // --- helpers ---
 
 
     private void assertToolRegistered(String toolName)
     {
-        assertThat(findTool(toolName)).as("Expected tool '%s' to be registered", toolName)
-                        .isNotNull();
+        assertThat(findTool(toolName)).as("Expected tool '%s' to be registered", toolName).isNotNull();
     }
 
 

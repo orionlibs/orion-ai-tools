@@ -1,4 +1,4 @@
-package com.orion.mcp.server;
+package com.orion.aitools.mcp.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

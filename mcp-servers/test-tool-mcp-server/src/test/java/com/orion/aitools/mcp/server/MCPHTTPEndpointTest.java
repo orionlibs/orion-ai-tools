@@ -1,4 +1,4 @@
-package com.orion.mcp.server;
+package com.orion.aitools.mcp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,6 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 @SpringBootTest
 public class MCPHTTPEndpointTest
 {
+    private static final String MCP_ENDPOINT = "/mcp";
     @Autowired
     WebApplicationContext context;
     MockMvc mockMvc;
@@ -24,7 +25,6 @@ public class MCPHTTPEndpointTest
     // session ID obtained from initialize — shared across tests in the same instance
     private String sessionId;
     // Streamable HTTP sends everything as POST to /mcp
-    private static final String MCP_ENDPOINT = "/mcp";
 
 
     @BeforeEach
