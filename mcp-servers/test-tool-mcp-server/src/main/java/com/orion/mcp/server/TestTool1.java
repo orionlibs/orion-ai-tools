@@ -21,6 +21,6 @@ public class TestTool1
             correlationID = (String)context.getContext().get("correlationID");
         }
         System.out.println("correlationID provided by client: " + correlationID);
-        return "Hello, " + name + "! Hope you're having a great day.";
+        return "Hello, " + name + "! Hope you are having a great day";
     }
 }

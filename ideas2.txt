@@ -1,11 +1,7 @@
-# MCP Tools for Claude Code — Comprehensive Idea List
-
-Tools are grouped by domain. Each entry: tool name, what it does, why it helps Claude Code.
-
 ================================================================
 1. CODE INTELLIGENCE & NAVIGATION
 ================================================================
-- symbol_lookup        Resolve a symbol to its definition, type, and docstring across the repo (LSP-backed). Saves grep churn.
+- symbol_lookup         Resolve a symbol to its definition, type, and docstring across the repo (LSP-backed). Saves grep churn.
 - find_references       All usages of a symbol with file:line. Better than text grep (scope-aware).
 - call_hierarchy        Callers/callees of a function. Helps impact analysis before edits.
 - type_at_point         Hover type info at a file:line. Removes guessing about inferred types.
