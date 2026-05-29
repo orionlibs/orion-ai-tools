@@ -18,7 +18,7 @@ public class TestTool1Test
 
 
     @Test
-    void greet_inEnglish_returnsEnglishGreeting()
+    void greet_returnsEnglishGreeting()
     {
         String result = tools.greet("Alice", null);
         assertThat(result).contains("Alice").containsIgnoringCase("hello");

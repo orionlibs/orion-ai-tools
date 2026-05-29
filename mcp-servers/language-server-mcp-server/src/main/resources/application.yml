@@ -1,0 +1,31 @@
+server:
+  port: 8080
+  tomcat:
+    socket:
+      so-linger=-1:
+
+
+spring:
+  main:
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: language-server-mcp-server
+        version: 0.0.1
+        enabled: true
+        type: sync
+        resource-change-notification: true
+        tool-change-notification: true
+        prompt-change-notification: true
+        protocol: streamable
+        annotation-scanner:
+          enabled: true
+
+
+# Keep standard out clean for JSON-RPC; push errors elsewhere
+logging:
+  level:
+    root: ERROR
+  pattern:
+    console: "%property{LOG_FILE}"
