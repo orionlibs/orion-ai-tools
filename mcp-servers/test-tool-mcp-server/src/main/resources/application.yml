@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: test-tool-mcp-server
+        version: 0.0.1
+        enabled: true
+        type: sync
+        resource-change-notification: true
+        tool-change-notification: true
+        prompt-change-notification: true
+        protocol: streamable

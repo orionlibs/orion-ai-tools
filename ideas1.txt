@@ -1,0 +1,371 @@
+There are ~12 distinct surfaces you can hook into. Most people only use 2-3.
+
+  1. Hooks               — run shell/code on lifecycle events
+  2. Skills              — reusable, model-invoked capability packages
+  3. Slash commands      — user-invoked prompt templates
+  4. Subagents           — specialized agents with their own tools/prompt
+  5. MCP servers         — external tools, resources, prompts over a protocol
+  6. Plugins             — bundle skills+commands+agents+hooks+MCP into one install
+  7. Settings.json       — permissions, env, model, behavior config
+  8. Output styles       — change how Claude responds / formats
+  9. Status line         — custom live status bar (any script)
+ 10. Keybindings         — remap keys, add chords
+ 11. Memory (CLAUDE.md + memory dir) — persistent context & facts
+ 12. Agent SDK / Headless — drive Claude Code programmatically, build your own apps
+ 13. Background tasks / Cron / Workflows — autonomous & scheduled orchestration
+ 14. IDE & surface integrations — VS Code, JetBrains, web, desktop, CLI
+
+
+--------------------------------------------------------------------------------
+[MECH] 1. HOOKS  ⚡  (the most powerful + most underused surface)
+--------------------------------------------------------------------------------
+Shell commands (or any executable) that fire on lifecycle events. The harness
+runs them — not the model — so they're deterministic and can't be "forgotten."
+
+Event types you can hook:
+  - PreToolUse        — before any tool runs (can BLOCK or rewrite the call)
+  - PostToolUse       — after a tool runs (inspect/react to output)
+  - UserPromptSubmit  — when you hit enter (mutate/augment the prompt)
+  - Stop / SubagentStop — when Claude finishes a turn
+  - SessionStart / SessionEnd — boot & teardown
+  - Notification      — when Claude needs attention
+  - PreCompact        — before context compaction
+
+What hooks unlock:
+  - Veto power over tool calls (block dangerous commands, enforce policy)
+  - Auto-inject context (the RTK setup, project facts, current ticket)
+  - Transparent command rewriting (e.g. `git status` -> `rtk git status`)
+  - Deterministic automation ("always run X after Y")
+
+[IDEA] Auto-formatter gate: PostToolUse on Edit/Write -> run prettier/gofmt,
+       reject the edit if it doesn't pass.
+[IDEA] Secret scanner: PreToolUse on Write/Edit -> block if a regex matches an
+       API key / .env value about to be committed.
+[IDEA] ⚡ Cost meter: PostToolUse logs token usage to a sqlite db; status line
+       reads it -> live $ spend per session (RTK-style for everything).
+[IDEA] Test-on-save: PostToolUse on edits to src/** -> run the matching test file,
+       feed only failures back.
+[IDEA] Voice/desktop ping: Notification hook -> macOS `say` or push notification
+       when Claude is blocked waiting on you.
+[IDEA] Branch guard: PreToolUse on `git commit`/`git push` -> refuse if on `main`.
+[IDEA] Auto-changelog: Stop hook -> append a one-line summary of what changed to
+       a running CHANGELOG/worklog.
+[IDEA] Context injector: UserPromptSubmit -> grep the prompt for a ticket ID,
+       fetch the Jira/Linear issue, prepend it.
+[IDEA] "Forbidden dir" enforcer: PreToolUse blocks any Read into node_modules/.git.
+[IDEA] Compaction archivist: PreCompact -> dump the full transcript to disk so
+       nothing is ever truly lost.
+
+
+--------------------------------------------------------------------------------
+[MECH] 2. SKILLS  ⚡  (model-invoked capability packages)
+--------------------------------------------------------------------------------
+A folder with a SKILL.md (name + description frontmatter) plus optional scripts,
+references, and assets. Claude reads the description and invokes when relevant.
+This is how you teach Claude a *repeatable methodology* or *domain workflow*.
+
+Anatomy:
+  - Frontmatter `description` = the trigger logic (when to fire)
+  - Body = the procedure / checklist / rules
+  - references/*.md = deep docs loaded on demand (keeps context lean)
+  - scripts/* = deterministic helpers the skill calls (don't make the model
+    do what a script can do reliably)
+
+Skill types:
+  - RIGID (TDD, debugging) — follow exactly, discipline-enforcing
+  - FLEXIBLE (design patterns) — adapt principles to context
+
+[IDEA] Company-specific code review skill encoding YOUR org's standards.
+[IDEA] Incident-response runbook skill (declare sev, gather logs, timeline, RCA).
+[IDEA] ⚡ "House style" skill: your naming conventions, file layout, lint rules,
+       commit format — so every change matches your repo automatically.
+[IDEA] Domain skill: "how to add a new API endpoint in our codebase" (the 9
+       files you always touch, in order, with the gotchas).
+[IDEA] Migration skill: encode a repeatable framework upgrade procedure.
+[IDEA] Data-pull skill: wraps your warehouse — "answer this metric question"
+       knows the schema, the right tables, the caveats.
+[IDEA] Onboarding skill: turns a new hire's questions into guided codebase tours.
+[IDEA] Skill that writes skills (meta) — interview the user, emit a SKILL.md.
+[IDEA] Release skill: version bump + changelog + tag + GH release in your flavor.
+
+
+--------------------------------------------------------------------------------
+[MECH] 3. SLASH COMMANDS  (user-invoked prompt templates)
+--------------------------------------------------------------------------------
+Markdown files in .claude/commands/ (project) or ~/.claude/commands/ (global).
+`/name` expands into a prompt. Supports $ARGUMENTS, $1/$2, !`bash` injection,
+@file references, frontmatter (allowed-tools, model, description).
+
+Difference vs skills: commands are YOU triggering ("do this now"); skills are
+CLAUDE deciding ("this situation calls for X"). Build both for the same workflow.
+
+[IDEA] /standup — summarize yesterday's commits into a standup update.
+[IDEA] /pr — diff -> conventional commit -> push -> open PR with templated body.
+[IDEA] /explain $file — plain-English walkthrough for a teammate.
+[IDEA] /fixme — grep for TODO/FIXME, triage, fix the easy ones.
+[IDEA] /scaffold $component — generate component+test+story from your template.
+[IDEA] /eod — end-of-day: commit WIP, write tomorrow's TODO, log time.
+[IDEA] /triage $issue_url — fetch a GH issue, reproduce, propose a fix plan.
+[IDEA] /rtk-audit — wrap `rtk discover` to find missed token-saving chances.
+
+
+--------------------------------------------------------------------------------
+[MECH] 4. SUBAGENTS  ⚡  (specialized agents-in-a-box)
+--------------------------------------------------------------------------------
+Defined in .claude/agents/*.md with their own system prompt, tool allow-list,
+and (optionally) model. The main agent delegates whole tasks to them; their
+context is isolated (keeps the main thread clean) and only the conclusion returns.
+
+Why they matter:
+  - Parallelism: fan out N independent tasks at once
+  - Context isolation: a 50-file search doesn't pollute your main context
+  - Specialization: a reviewer with a hostile persona; a researcher tuned for web
+  - Worktree isolation: agents that mutate files in parallel without conflict
+
+[IDEA] A panel of adversarial reviewers (security, perf, correctness) that run
+       in parallel on every diff and vote.
+[IDEA] ⚡ "Explorer" agent for any broad search so file dumps never hit your context.
+[IDEA] Dedicated test-writer agent that only writes/repairs tests.
+[IDEA] Research agent wired to your internal wiki + web.
+[IDEA] Migration agent per-file in its own worktree (mass refactors safely).
+[IDEA] "Second opinion" agent on a different model for disagreement-detection.
+
+
+--------------------------------------------------------------------------------
+[MECH] 5. MCP SERVERS  ⚡  (the universal tool/integration protocol)
+--------------------------------------------------------------------------------
+Model Context Protocol: a standard way to expose TOOLS, RESOURCES, and PROMPTS
+to Claude from an external process (stdio, SSE, or HTTP). This is THE way to
+connect Claude Code to the outside world. Hundreds exist; you can write your own.
+
+Three things an MCP server can expose:
+  - Tools     — actions Claude can call (query db, send slack, deploy)
+  - Resources — data Claude can read (files, records, dashboards)
+  - Prompts   — server-provided slash-command-like templates
+
+Transports: local stdio process, remote SSE/HTTP (great for team-shared servers).
+
+[IDEA] Internal-API MCP: wrap your company's REST API so Claude can act in your
+       product (create users, refund orders, pull metrics) — agent-native ops.
+[IDEA] ⚡ Warehouse MCP: read-only SQL to your analytics DB; Claude answers data
+       questions with real numbers.
+[IDEA] Design MCP: read Figma -> generate matching components (figma sync).
+[IDEA] Observability MCP: query Datadog/Grafana/Sentry during debugging.
+[IDEA] Ticketing MCP: Linear/Jira/GitHub issues as first-class read/write tools.
+[IDEA] Browser MCP (Playwright): let Claude drive a real browser to verify UI.
+[IDEA] Knowledge-base MCP: RAG over your Notion/Confluence/Slack.
+[IDEA] Hardware/IoT MCP: control lab equipment, home automation, robots.
+[IDEA] Payments MCP (Stripe): create products, inspect charges, test webhooks.
+
+
+--------------------------------------------------------------------------------
+[MECH] 6. PLUGINS  ⚡  (the distribution unit — bundle everything)
+--------------------------------------------------------------------------------
+A plugin packages skills + slash commands + subagents + hooks + MCP servers into
+one installable unit, distributed via a marketplace (a git repo of plugins).
+This is how you SHIP your extensions to a team or the world.
+
+(The `compound-engineering`, `engineering-skills`, `superpowers` bundles in this
+ very session are plugins — that's the model.)
+
+[IDEA] ⚡ A company "starter pack" plugin: house-style skill, /pr command, code-
+       review agents, secret-scan hook, internal-API MCP — one install, whole
+       team is aligned.
+[IDEA] A stack-specific plugin (e.g. "Rails 37signals style", "Next.js + tRPC").
+[IDEA] An open-source plugin marketplace for a framework's community.
+[IDEA] A "security team" plugin: pen-test skills, threat-detection agents,
+       incident-response runbooks, SAST hooks.
+[IDEA] A teaching plugin: codebase-to-course skill + quiz generators.
+
+
+--------------------------------------------------------------------------------
+[MECH] 7. SETTINGS.JSON  (config & policy)
+--------------------------------------------------------------------------------
+Layered config: enterprise -> user (~/.claude) -> project (.claude) -> local.
+Controls permissions (allow/deny tool patterns), env vars, default model, hooks
+registration, MCP server registration, status line, output style, and more.
+
+[IDEA] Permission allow-list tuned to your safe commands -> far fewer prompts
+       (the /fewer-permission-prompts skill automates this).
+[IDEA] Deny-list dangerous patterns org-wide via enterprise settings.
+[IDEA] Per-project model routing (cheap model for one repo, Opus for another).
+[IDEA] Env-injected feature flags that skills/hooks read.
+
+
+--------------------------------------------------------------------------------
+[MECH] 8. OUTPUT STYLES  (change Claude's response shape)
+--------------------------------------------------------------------------------
+Swap the default response behavior — e.g. ultra-terse, teaching mode, code-only,
+or a domain persona — without rewriting your whole CLAUDE.md.
+
+[IDEA] "Explain like I'm reviewing a PR" style for review sessions.
+[IDEA] "Socratic tutor" style for learning a codebase.
+[IDEA] "Commit-message-only" style for rapid committing.
+
+
+--------------------------------------------------------------------------------
+[MECH] 9. STATUS LINE  (custom live status bar)
+--------------------------------------------------------------------------------
+A script that renders the bottom status bar — gets session JSON on stdin, prints
+a line. Anything goes.
+
+[IDEA] ⚡ Live token-spend + $ cost (read from your cost-meter hook's db).
+[IDEA] Current git branch + dirty count + CI status.
+[IDEA] Pomodoro timer / time-on-task.
+[IDEA] Current ticket + its status pulled from Linear.
+[IDEA] Model + context-window-% used.
+
+
+--------------------------------------------------------------------------------
+[MECH] 10. KEYBINDINGS  (~/.claude/keybindings.json)
+--------------------------------------------------------------------------------
+Remap keys, add chord shortcuts.
+
+[IDEA] Chord to insert your most-used slash command.
+[IDEA] Rebind submit, quick-/compact, quick-model-switch.
+
+
+--------------------------------------------------------------------------------
+[MECH] 11. MEMORY  (CLAUDE.md + file-based memory)
+--------------------------------------------------------------------------------
+CLAUDE.md (global/project/local) = always-loaded instructions. The memory dir =
+one-fact-per-file persistent store with frontmatter, indexed by MEMORY.md.
+
+[IDEA] ⚡ Auto-memory hook: after each session, extract decisions/preferences and
+       write memory files — Claude compounds knowledge over time.
+[IDEA] Per-project "gotchas" memory that survives across sessions.
+[IDEA] Team-shared CLAUDE.md checked into the repo (you already have RTK rules).
+[IDEA] A "learnings" pipeline (the ce-compound skill model): every solved bug
+       becomes a searchable doc future sessions consult.
+
+
+--------------------------------------------------------------------------------
+[MECH] 12. AGENT SDK / HEADLESS  ⚡  (Claude Code as a library)
+--------------------------------------------------------------------------------
+Run Claude Code non-interactively (`claude -p`, JSON output) or via the Agent SDK
+to build your OWN applications on the same engine. This is the biggest surface of
+all — Claude Code becomes infrastructure.
+
+[IDEA] ⚡ CI bot: on every PR, run Claude headless to review + comment.
+[IDEA] Issue-to-PR bot: GH issue labeled "claude" -> autonomous fix + PR.
+[IDEA] Slack bot backed by Claude Code with your MCP tools.
+[IDEA] Batch refactorer: script that runs Claude across 500 repos.
+[IDEA] A custom domain agent product (support agent, data analyst) on the SDK.
+[IDEA] Nightly "tech-debt sweeper" that opens small cleanup PRs.
+[IDEA] Self-hosted web UI that drives Claude Code for non-technical teammates.
+
+
+--------------------------------------------------------------------------------
+[MECH] 13. BACKGROUND TASKS / CRON / WORKFLOWS  ⚡
+--------------------------------------------------------------------------------
+- Background bash & background agents — long-running work that notifies on done.
+- Cron — scheduled recurring Claude runs.
+- /loop — run a prompt/command on an interval or self-paced.
+- Workflows — deterministic multi-agent orchestration scripts (fan-out, pipeline,
+  parallel, judge panels, loop-until-dry) for comprehensive/confident work.
+
+[IDEA] ⚡ Cron "PR babysitter": every 10 min, check open PRs, fix red CI.
+[IDEA] Daily dependency-audit cron -> opens an issue if CVEs appear.
+[IDEA] Workflow: review-changes across N dimensions, adversarially verify each.
+[IDEA] Workflow: mass-migration over a file list, each in its own worktree.
+[IDEA] /loop watching a deploy until healthy, then notify.
+[IDEA] Nightly "what changed in our deps' changelogs" digest.
+[IDEA] Scheduled product-pulse report (usage + errors + signals).
+
+
+--------------------------------------------------------------------------------
+[MECH] 14. SURFACES / INTEGRATIONS
+--------------------------------------------------------------------------------
+Claude Code runs in: terminal CLI, VS Code & JetBrains extensions, desktop app
+(Mac/Win), and web (claude.ai/code). Each is an integration point.
+
+[IDEA] IDE-driven workflows: select code -> trigger a skill from the editor.
+[IDEA] Web sessions for non-terminal teammates (PMs, designers).
+[IDEA] Mobile/remote kickoff of long background jobs.
+
+
+================================================================================
+PART 2 — BIGGER "PRODUCTS" YOU CAN BUILD BY COMBINING SURFACES
+================================================================================
+
+The real power is COMPOSITION. Combine surfaces into a system:
+
+[IDEA] ⚡ AGENT-NATIVE APP
+  MCP (your API as tools) + subagents + skills + headless SDK = your product
+  becomes operable by an agent. Anything a user can do in the UI, an agent can do.
+  Build features as "outcomes an agent achieves in a loop," not screens.
+
+[IDEA] ⚡ THE COMPOUNDING ENGINEERING SETUP
+  every bug fixed -> ce-compound writes a learning doc
+  -> learnings-researcher skill consults them next time
+  -> house-style skill + review agents enforce standards
+  -> /pr + commit skills standardize output
+  Net effect: the system gets smarter and more consistent every week.
+
+[IDEA] ⚡ FULLY AUTONOMOUS SHIP PIPELINE  (the `lfg` pattern)
+  plan -> work -> multi-agent code review -> browser test -> commit -> push ->
+  open PR -> watch CI -> fix failures until green. Kicked off by one prompt or
+  a GH label, runnable headless in CI.
+
+[IDEA] TOKEN-OPTIMIZATION LAYER  (RTK, generalized)
+  hooks rewrite verbose commands to compact proxies + cost-meter hook +
+  status-line spend display + a /gain command. 60-90% fewer tokens, measured.
+
+[IDEA] TEAM PLATFORM
+  one plugin distributing: company skills, MCP servers for internal systems,
+  policy hooks, review agents, shared CLAUDE.md. New engineer installs once and
+  is instantly aligned with org standards + tooling.
+
+[IDEA] CODEBASE-AS-PRODUCT
+  codebase-to-course skill turns repos into interactive HTML lessons; pair with
+  a docs MCP and an onboarding subagent for self-serve onboarding.
+
+[IDEA] DESIGN-TO-CODE LOOP
+  Figma MCP + frontend-design skill + browser MCP screenshots + design-iterator
+  agent = closed loop that builds UI and visually verifies it matches the design.
+
+[IDEA] DATA ANALYST IN A BOX
+  warehouse MCP (read-only SQL) + a metrics skill (schema + caveats) + a charting
+  script + scheduled cron = self-serve analytics for the whole company in chat.
+
+[IDEA] SECURITY OPERATIONS SUITE
+  SAST hooks on every edit + secret-scanner + red-team/threat-detection skills +
+  incident-response runbook + scheduled dependency-CVE cron.
+
+
+================================================================================
+PART 3 — DECISION CHEAT-SHEET (which surface for which need)
+================================================================================
+
+Need...                                          -> Use...
+-----------------------------------------------  -> --------------------------
+"Always do X automatically, deterministically"   -> HOOK
+"Teach Claude a repeatable methodology"           -> SKILL
+"A button I press to run a workflow"              -> SLASH COMMAND
+"Isolate/parallelize a chunk of work"            -> SUBAGENT
+"Connect to an external system/API/data"         -> MCP SERVER
+"Ship all of the above to my team"               -> PLUGIN + MARKETPLACE
+"Change permissions / model / env"                -> SETTINGS.JSON
+"Change how responses look"                       -> OUTPUT STYLE
+"Custom info in the status bar"                   -> STATUS LINE
+"Persist knowledge across sessions"               -> MEMORY / CLAUDE.md
+"Run Claude in CI / build a product on it"        -> AGENT SDK / HEADLESS
+"Schedule or loop autonomous work"                -> CRON / /loop / BACKGROUND
+"Comprehensive multi-agent orchestration"         -> WORKFLOW
+
+
+================================================================================
+PART 4 — PRINCIPLES FOR GOOD EXTENSIONS
+================================================================================
+- Determinism in hooks/scripts; judgment in the model. Don't make the model do
+  what a script can do reliably (and cheaply).
+- Skills should DESCRIBE WHEN clearly — the description is the router.
+- Keep context lean: push deep docs into references/, load on demand; use
+  subagents to absorb file dumps.
+- Agent-native parity: every action a human can take, expose so an agent can too.
+- Compound: capture every learning as a durable artifact future runs consult.
+- Measure: instrument tokens/cost/time so you know an extension actually helps.
+
+================================================================================
+END
+================================================================================
