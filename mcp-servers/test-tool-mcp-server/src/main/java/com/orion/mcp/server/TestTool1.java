@@ -1,4 +1,4 @@
-package com.yapily.mcp.server;
+package com.orion.mcp.server;
 
 import org.springaicommunity.mcp.annotation.McpTool;
 import org.springaicommunity.mcp.annotation.McpToolParam;

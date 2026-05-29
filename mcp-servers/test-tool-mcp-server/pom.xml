@@ -64,7 +64,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.yapily.mcp.server.MCPServerApplication</mainClass>
+                    <mainClass>com.orion.mcp.server.MCPServerApplication</mainClass>
                     <jvmArguments>
                         --add-opens java.base/java.time=ALL-UNNAMED
                     </jvmArguments>

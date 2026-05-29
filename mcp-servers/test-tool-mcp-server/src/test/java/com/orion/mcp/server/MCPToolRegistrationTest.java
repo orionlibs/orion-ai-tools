@@ -1,4 +1,4 @@
-package com.yapily.mcp.server;
+package com.orion.mcp.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
