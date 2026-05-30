@@ -30,7 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class SymbolResolverToolsTest
 {
     @Mock
-    private LspBridgeService lspBridgeService;
+    private LSPBridgeService lspBridgeService;
     @InjectMocks
     private SymbolResolverTools symbolResolverTools;
     private SymbolInformation sampleSymbol;

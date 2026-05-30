@@ -27,7 +27,7 @@ public class MCPHTTPEndpointTest
     private String sessionId;
     // This line mocks the service and stop 'jdtls' from being called
     @MockitoBean
-    private LspBridgeService lspBridgeService;
+    private LSPBridgeService lspBridgeService;
     // Streamable HTTP sends everything as POST to /mcp
 
 

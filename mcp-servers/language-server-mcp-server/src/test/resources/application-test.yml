@@ -25,7 +25,7 @@ spring:
 
 lsp:
   server:
-    enabled: true
+    enabled: false
 
 
 # Keep standard out clean for JSON-RPC; push errors elsewhere

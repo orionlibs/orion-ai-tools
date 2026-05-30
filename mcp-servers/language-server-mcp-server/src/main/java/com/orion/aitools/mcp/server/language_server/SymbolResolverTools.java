@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class SymbolResolverTools
 {
-    private final LspBridgeService lspBridgeService;
+    private final LSPBridgeService lspBridgeService;
 
 
-    public SymbolResolverTools(LspBridgeService lspBridgeService)
+    public SymbolResolverTools(LSPBridgeService lspBridgeService)
     {
         this.lspBridgeService = lspBridgeService;
     }

@@ -31,5 +31,12 @@
             <artifactId>org.eclipse.lsp4j</artifactId>
             <version>1.0.0</version>
         </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.28.0</version>
+        </dependency>
     </dependencies>
 </project>
